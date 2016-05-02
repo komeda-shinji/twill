@@ -503,7 +503,7 @@ Note: submit is using submit button: name="%s", value="%s"
 
         elif func_name == 'follow_link':
             # Try to find the link first
-            url = self.find_link(args[0])
+            url = args[0]
             if url.find('://') == -1:
                 url = urlparse.urljoin(self.get_url(), url)
 
