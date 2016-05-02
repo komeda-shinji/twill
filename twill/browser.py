@@ -16,6 +16,8 @@ from requests.exceptions import InvalidSchema, ConnectionError
 from utils import print_form, unique_match, _follow_equiv_refresh, ResultWrapper
 from errors import TwillException
 
+from _mechanize_dist._headersutil import split_header_words
+
 class TwillBrowser(object):
     """A simple, stateful browser"""
     def __init__(self):
@@ -520,3 +522,12 @@ Note: submit is using submit button: name="%s", value="%s"
                 self._history.append(self.result)
 
         self.result = ResultWrapper(r)
+
+    def encoding(self):
+        if self.result is not None:
+            content_type = self.result.get_headers()['content-type']
+            for k, v in split_header_words([content_type])[0]:
+                if k == "charset":
+                    return v
+        return None
+

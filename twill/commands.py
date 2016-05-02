@@ -60,7 +60,8 @@ __all__ = ['get_browser',
            'add_extra_header',
            'show_extra_headers',
            'clear_extra_headers',
-           'info'
+           'info',
+           'encoding'
            ]
 
 import re, getpass, time
@@ -189,8 +190,9 @@ def follow(what):
     
     Find the first matching link on the page & visit it.
     """
-    regexp = re.compile(what)
+    regexp = re.compile(unicode(what))
     link = browser.find_link(regexp)
+    print 'follow %s' % link
     if link != '':
         browser.follow_link(link)
         return browser.get_url()
@@ -227,7 +229,7 @@ def find(what, flags=''):
     For explanations of these, please see the Python re module
     documentation.
     """
-    regexp = re.compile(what, _parseFindFlags(flags))
+    regexp = re.compile(unicode(what), _parseFindFlags(flags))
     page = browser.get_html()
 
     m = regexp.search(page)
@@ -248,7 +250,7 @@ def notfind(what, flags=''):
     
     Fail if the regular expression is on the page.
     """
-    regexp = re.compile(what, _parseFindFlags(flags))
+    regexp = re.compile(unicode(what), _parseFindFlags(flags))
     page = browser.get_html()
 
     if regexp.search(page):
@@ -455,7 +457,7 @@ def formvalue(formname, fieldname, value):
                     'form field is for file upload; use "formfile" instead'
                 )
 
-    set_form_control_value(control, value)
+    set_form_control_value(control, value.decode(sys.getdefaultencoding()))
 
 fv = formvalue
 
@@ -714,7 +716,7 @@ def title(what):
     
     Succeed if the regular expression is in the page title.
     """
-    regexp = re.compile(what)
+    regexp = re.compile(unicode(what))
     title = browser.get_title()
 
     print>>OUT, "title is '%s'." % (title,)
@@ -899,3 +901,10 @@ def info():
             print >>OUT, '\tThis page contains %d form(s)' % (len(forms),)
             
     print >>OUT, ''
+
+def encoding():
+    """
+    >> encoding
+
+    """
+    print browser.encoding()
