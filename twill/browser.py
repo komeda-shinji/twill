@@ -331,6 +331,8 @@ more than one form; you must select one (use 'fv') before submitting\
 """)
         if form.action is None:
             form.action = self.get_url()
+        else:
+            form.action = urlparse.urljoin(self.get_url(), form.action)
 
         # no fieldname?  see if we can use the last submit button clicked...
         if fieldname is None:
@@ -377,9 +379,18 @@ Note: submit is using submit button: name="%s", value="%s"
         #
         # now actually GO.
         #
-        payload = list(form.form_values())
+        encoding = self.encoding()
+        payload = {}
+        for k, v in list(form.form_values()):
+            if payload.has_key(k):
+                if isinstance(payload[k], list):
+                    payload[k].append(v.encode(encoding))
+                else:
+                    payload[k] = [payload[k], v.encode(encoding)]
+            else:
+                payload[k] = v.encode(encoding)
         if ctl is not None and ctl.get("name") is not None:
-            payload.append( (ctl.get("name"), ctl.value) )
+            payload[ctl.get("name")] = ctl.value
         if form.method == 'POST':
             if len(self._formFiles) != 0:
                 r = self._session.post(
@@ -395,7 +406,7 @@ Note: submit is using submit button: name="%s", value="%s"
                                         headers=headers
                                       )
         else:
-            r = self._session.get(form.action, data=payload, headers=headers)
+            r = self._session.get(form.action, params=payload, headers=headers)
 
         self._formFiles.clear()
         self._history.append(self.result)
